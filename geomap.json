@@ -41,6 +41,11 @@
       "description": "Key",
       "default": ""  
    },
+    "hstoken": {
+      "type": "string",
+      "description": "HS Token",
+      "default": ""  
+    },
     "servicelevel": {
       "type": "integer",
       "description": "Electrical NODISCONT Service Level",
@@ -76,6 +81,17 @@
         }
       ],
       "body": "this.apikey = pkey;"
+    },
+      "setHSToken": {
+      "description": "Set the HS Token",
+      "parameters": [
+        {
+          "name": "hst",
+          "type": "string",
+          "description": "Set New API Key"
+        }
+      ],
+      "body": "this.hstoken = hst;"
     },
     "getPortalURL": {
       "returnType": "string",
