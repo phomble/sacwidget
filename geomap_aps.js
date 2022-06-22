@@ -1,5 +1,6 @@
 (function () {
     var gPassedAPIkey;
+    var gPassedHSToken;
     let tmpl = document.createElement("template");
     tmpl.innerHTML = `
       <style>
