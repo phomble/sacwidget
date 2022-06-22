@@ -129,7 +129,7 @@
         static get observedAttributes() {
             return [
                 "apikey",
-                "hstoken"
+                "hstoken",
                 "portalurl"
             ];
         }
