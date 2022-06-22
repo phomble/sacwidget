@@ -96,14 +96,7 @@
             
         }
         
-        get hstoken() {
-            return this.getValue("hstoken");
-            
-        }
-        set hstoken(value) {
-            this.setValue("hstoken", value);
-            
-        }
+       
 
         get portalurl() {
             return this.getValue("portalurl");
@@ -126,7 +119,7 @@
         static get observedAttributes() {
             return [
                 "apikey",
-                "hstoken",
+                
                 "portalurl"
             ];
         }
