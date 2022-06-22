@@ -3,6 +3,7 @@
     var gPassedServiceType; // holds passed in guarantee of service - set in onCustomWidgetBeforeUpdate()
     var gPassedPortalURL; //ESRI Portal URL
     var gPassedAPIkey; //ESRI JS api key
+    var gPassedHSToken; //HS Token
     var gWebmapInstantiated = 0; // a global used in applying definition query
     var gMyLyr; // for sublayer
     var gMyWebmap; // needs to be global for async call to onCustomWidgetAfterUpdate()
@@ -116,6 +117,9 @@
 
                 //  set esri api Key 
                 esriConfig.apiKey = gPassedAPIkey
+                
+                 //  set hstoken 
+                esriConfig.apiKey = gPassedHSToken
         
                 // set routing service
                 var routeTask = new RouteTask({
@@ -267,6 +271,11 @@
                 this.$apikey = changedProperties["apikey"];
             }
             gPassedAPIkey = this.$apikey; // place passed in value into global
+            
+            if ("hstoken" in changedProperties) {
+                this.$hstoken = changedProperties["hstoken"];
+            }
+            gPassedHSToken = this.$hstoken; // place passed in value into global
 
             // only attempt to filter displayed service locations if the webmap is initialized
            if (gWebmapInstantiated === 1) {
