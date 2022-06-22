@@ -1,0 +1,520 @@
+swagger: '2.0'
+info:
+  title: Mapping
+  version: '1.0'
+  description: |-
+    Access map tiles that you can use in GIS and other spatial applications as a background map for the visualization of georeferenced data.
+x-servers:
+  - url: 'https://{serviceprefix}.cfapps.{region}.hana.ondemand.com/mapping/v1'
+    description: Production URL
+    templates:
+      region:
+        default: eu10
+        enum: [eu10, us10]
+      serviceprefix:
+        default: spatialservices
+        enum: [spatialservices, 1.spatialservices, 2.spatialservices, 3.spatialservices]
+      authprefix:
+        description: The authprefix is usually your own subdomain and can be found in the service key of the service instance in your cloud foundry space
+x-sap-shortText: Get image tiles to build a base map.
+securityDefinitions:
+  Oauth2_ClientCredentials:
+    type: oauth2
+    tokenUrl: 'https://{authprefix}.authentication.{region}.hana.ondemand.com/oauth/token'
+    flow: application
+    scopes: {}
+security:
+  - Oauth2_ClientCredentials: []
+externalDocs:
+  description: Click here for more information about SAP HANA spatial services
+  url: 'https://help.sap.com/viewer/p/SAP_HANA_SPATIAL_SERVICES'
+paths:
+  /here/tiles/{resource}/{mapId}/{scheme}/{zoom}/{column}/{row}/{size}/{format}:
+    get:
+      summary: Request map tiles originating from HERE
+      description: Endpoint to request HERE map tiles. This service provides all available parameters from the original HERE Map Tile API and allows custom display options as well as multiple tile resources and color schemes.
+      parameters:
+        - name: resource
+          in: path
+          description: 'Defines the tile type. For example maptile, basetile, or labeltile. Find a complete list of tile types in the [HERE documentation](https://developer.here.com/rest-apis/documentation/enterprise-map-tile/topics/request-constructing.html). Example: basetile'
+          required: true
+          type: string
+        - name: mapId
+          in: path
+          description: 'Specifies the map version. This can be a version ID, "newest", or a hash. Example: newest'
+          required: true
+          type: string
+        - name: scheme
+          in: path
+          description: 'Defines the view scheme. For example, normal.day, normal.night, or hybrid.day. Find a complete list of view schemes in the [HERE documentation](https://developer.here.com/rest-apis/documentation/enterprise-map-tile/topics/request-constructing.html). Example: normal.day'
+          required: true
+          type: string
+        - name: zoom
+          in: path
+          description: 'Zoom level of the map image. Example: 4'
+          required: true
+          type: integer
+        - name: column
+          in: path
+          description: 'Tile column number. Example: 8'
+          required: true
+          type: integer
+        - name: row
+          in: path
+          description: 'Tile row number. Example: 5'
+          required: true
+          type: integer
+        - name: size
+          in: path
+          description: 'Size of the returned map tile in pixels per side. Example: 256'
+          required: true
+          type: integer
+          enum: [256,512]
+        - name: format
+          in: path
+          description: 'Defines the output format. Example: png'
+          required: true
+          type: string
+          enum: [png, png8, jpg]
+        - name: lang
+          in: query
+          description: 'Defines the language of map tiles. If the parameter is not declared or the value is not supported then the default language of the provider will be used. It uses MARC three-letter language codes e.g.: fre'
+          required: false
+          type: string
+      tags:
+        - HERE Mapping Service
+      responses:
+        '200':
+          description: The request was successful, the response contains the requested image.
+          examples:
+            Example Request: GET /here/tiles/maptile/newest/normal.day/4/8/5/256/png?lang=fre
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '401':
+          description: Unauthorized
+          schema:
+            type: string
+            example: Unauthorized
+        '403':
+          description: Access forbidden
+          schema:
+            type: string
+            example: Forbidden
+        '404':
+          description: Resource not found.
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '501': # Can currently happen in China only!
+          description: 'Not Implemented Error. May indicate regional limitations.'
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+  /esri/styles/vector/{scheme}:
+    get:
+      description: This is the entry point to vector maps and typically needs to be configured in an application. It provides additional meta data such as further data sources and style definitions, which is then consumed by a rendering library.
+      produces:
+        - application/json
+      summary: Endpoint to request HSS vector style definitions.
+      parameters:
+        - name: scheme
+          in: path
+          description: 'Defines the view scheme. The current implementation only supports a subset of [Esri Basemap-Layer-Service](https://developers.arcgis.com/documentation/mapping-apis-and-services/maps/services/basemap-layer-service/). Available schemes are `arcgis.dark.gray`, `arcgis.dark.gray.base`, `arcgis.dark.gray.labels`, `arcgis.light.gray`, `arcgis.light.gray.base`, `arcgis.light.gray.labels`, `arcgis.navigation`, `arcgis.navigation.night`, `arcgis.streets`, `arcgis.streets.night`, `osm.dark.gray`, `osm.dark.gray.base`, `osm.dark.gray.labels`, `osm.light.gray`, `osm.light.gray.base`, `osm.light.gray.labels`, `osm.streets`.'
+          required: true
+          type: string
+        - name: api_key
+          in: query
+          description: 'Api key that is used for authentication with Esri.'
+          required: true
+          type: string
+      tags:
+        - Esri Mapping Service
+      responses:
+        '200':
+          description: The request was successful, the response contains the requested style definition.
+          examples:
+            Example Request: GET /esri/styles/vector/arcgis.dark.gray?api_key=<api_key>
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '404':
+          description: Resource not found
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '498':
+          description: Invalid token
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+  /esri/tiles/vector/{basemap}:
+    get:
+      description: Technical Endpoint to request basic information about the selected set of vector tiles (basemap), see [Esri Basemap-Layer-Service](https://developers.arcgis.com/documentation/mapping-apis-and-services/maps/services/basemap-layer-service/).
+      produces:
+        - application/json
+      summary: Technical Endpoint to request basic information about the basemap.
+      parameters:
+        - name: basemap
+          in: path
+          description: 'Defines the requested basemap. This base map can be [`arcgis`, `osm`].'
+          required: true
+          type: string
+        - name: api_key
+          in: query
+          description: 'Api key that is used for authentication with Esri.'
+          required: true
+          type: string
+      tags:
+        - Esri Mapping Service
+      responses:
+        '200':
+          description: The request was successful, the response contains the requested style definition.
+          examples:
+            Example Request: GET /esri/tiles/vector/arcgis?api_key=<api_key>
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '404':
+          description: Resource not found
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '498':
+          description: Invalid token
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+  /esri/tiles/vector/{basemap}/{zoom}/{column}/{row}:
+    get:
+      description: Technical Endpoint to request a vector tile originating from an Esri basemap. This service provides all available parameters from the original Esri Vector Mapping API. The URL for a basemap must be previously fetched by requesting a specific style
+      produces:
+        - application/octet-stream
+        - application/json
+      summary: Technical Endpoint to request a vector tile originating from an Esri basemap.
+      parameters:
+        - name: basemap
+          in: path
+          description: 'Defines the basemap of the request vector tile. Possible values are [`arcgis`,`osm`].'
+          required: true
+          type: string
+        - name: zoom
+          in: path
+          description: 'Zoom level of the vector tile. Example: 4'
+          required: true
+          type: integer
+        - name: column
+          in: path
+          description: 'Tile column number. Example: 8'
+          required: true
+          type: integer
+        - name: row
+          in: path
+          description: 'Tile row number. Example: 5'
+          required: true
+          type: integer
+        - name: api_key
+          in: query
+          description: 'Api key that is used for authentication with the selected provider.'
+          required: true
+          type: string
+      tags:
+        - Esri Mapping Service
+      responses:
+        '200':
+          description: The request was successful, the response contains the requested vector tile.
+          examples:
+            Example Request: GET /esri/tiles/vector/arcgis/0/0/0?api_key=<api_key>
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '404':
+          description: Resource not found
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+  /esri/glyphs/vector/{basemap}/font/{fontstack}/{range}:
+    get:
+      description: Technical Endpoint to request the glyphs corresponding to a particular basemap. Glyphs are used for rendering texts on the vector map.
+      produces:
+        - application/octet-stream
+        - application/json
+      summary: Technical Endpoint to request the fonts.
+      parameters:
+        - name: basemap
+          in: path
+          description: 'Defines the view scheme. The value is either `arcgis` or `osm`.'
+          required: true
+          type: string
+        - name: fontstack
+          in: path
+          description: 'Defines the font stack. Example: `Noto Sans Regular`.'
+          required: true
+          type: string
+        - name: range
+          description: ' Define the range of the fontstack. Example: `0-255`.'
+          in: path
+          required: true
+          type: string
+        - name: api_key
+          in: query
+          description: 'Api key that is used for authentication with the selected provider.'
+          required: true
+          type: string
+      tags:
+        - Esri Mapping Service
+      responses:
+        '200':
+          description: The request was successful, the response contains the requested glyphs.
+          examples:
+            Example Request: GET /esri/glyphs/vector/osm/font/Noto Sans Regular/0-255.pbf?api_key=<api_key>
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '404':
+          description: Requested font resource not available.
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+  /esri/sprites/vector/{id}/sprite{size}.{format}:
+    get:
+      description: Technical Endpoint to request sprites, which are used to draw signs, fill polygons or draw a point during map rendering.
+      produces:
+        - image/png
+        - application/json
+      tags:
+        - Esri Mapping Service
+      summary: Technical Endpoint to request sprites.
+      parameters:
+        - name: id
+          in: path
+          description: 'Defines the id of the requested sprites. This parameter will be provided by the vector style definition.'
+          required: true
+          type: string
+        - name: size
+          in: path
+          description: 'Defines the size of the requested sprites. Examples: ``@2x``'
+          type: string
+          required: true
+        - name: format
+          in: path
+          description: 'Defines the format of the requested sprites. Supported formats: ``png, json``'
+          type: string
+          required: true
+        - name: api_key
+          in: query
+          description: 'Api key that is used for authentication with the selected provider.'
+          required: true
+          type: string
+      responses:
+        '200':
+          description: The request was successful, the response contains the requested sprites.
+          examples:
+            Example Request: GET /esri/sprites/vector/30d6b8271e1849cd9c3042060001f425/sprite@2x.png?api_key=<api_key>
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '404':
+          description: Resource not found.
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+  /esri/sprites/vector/{id}/sprite.{format}:
+    get:
+      description: Technical Endpoint to request sprites, which are used to draw signs, fill polygons or draw a point during map rendering.
+      produces:
+        - image/png
+        - application/json
+      summary: Technical Endpoint to request sprites.
+      parameters:
+        - name: id
+          in: path
+          description: 'Defines the id of the requested sprites. This parameter will be provided by the vector style definition.'
+          required: true
+          type: string
+        - name: format
+          in: path
+          description: 'Defines the format of the requested sprites. Supported formats: ``png, json``'
+          type: string
+          required: true
+        - name: api_key
+          in: query
+          description: 'Api key that is used for authentication with the selected provider.'
+          required: true
+          type: string
+      tags:
+        - Esri Mapping Service
+      responses:
+        '200':
+          description: The request was successful, the response contains the requested glyphs.
+          examples:
+            Example Request: GET /esri/sprites/vector/30d6b8271e1849cd9c3042060001f425/sprite.json?api_key=<api_key>
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '404':
+          description: Requested font resource not available.
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+  /health:
+    get:
+      description: The health endpoint can be used to determine the service's current status.
+      produces:
+        - application/json
+        - text/plain
+      summary: health endpoint
+      tags:
+        - Service Health
+      responses:
+        '200':
+          description: The status of the service could sucessfully be provided. Please note that this status code does not yet tell you what the actual status of the service's health is; this information can be found in the response body.
+          schema:
+            type: object
+            properties:
+              status:
+                description: The service's overall health status. The value is "UP", if the service is healthy, and "CRITICAL" otherwise.
+                type: string
+                enum: [UP, CRITICAL]
+              timestamp:
+                description: The timestamp (Unix time) when the service reported the healthy status.
+                type: integer
+                example: 1606308415
+              message:
+                description: Message to explain what the reported status means.
+                type: string
+                example: 'All services are healthy'
+              details:
+                description: An object that contains further details about the checks that lead to the service's reported overall status.
+                properties:
+                  HERE:
+                    description: Contains the results of health checks for the respective HERE service
+                    type: array
+                    items:
+                      properties:
+                        service:
+                          description: The HERE service whose status was checked (see https://status.here.com/status)
+                          type: string
+                          enum: [maps]
+                        status:
+                          description: The status of the checked HERE service. The value is "OK", if the third party service is reported as healthy, and "CRITICAL" otherwise.
+                          type: string
+                          enum: [OK, CRITICAL]
+                        message:
+                          description: Message to explain what the reported status means.
+                          example: 'Service is healthy'
+        '401':
+          description: Unauthorized
+          schema:
+            type: string
+            example: Unauthorized
+        '403':
+          description: Access forbidden
+          schema:
+            type: string
+            example: Forbidden
+        '404':
+          description: Resource not found.
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/DefaultErrorSchemaV1'
+definitions:
+  DefaultErrorSchemaV1:
+    type: object
+    required:
+      - error
+    properties:
+      error:
+        type: object
+        description: 'Details about the error'
+        required:
+          - code
+          - message
+        properties:
+          code:
+            description: Technical code of the error situation
+            type: string
+            example: "00000"
+          message:
+            description: Description of the error
+            type: string
+            example: "Resource not found"
+          target:
+            description: The data element
+            type: string
+          details:
+            type: array
+            items:
+              type: object
+              required:
+                - code
+                - message
+              properties:
+                code:
+                  description: Technical code of the error situation
+                  type: string
+                message:
+                  description: Description of the error
+                  type: string
+        example:
+          {
+            "code": "00000",
+            "message": "An error occurred"
+          }
+host: sandbox.api.sap.com
+basePath: /spatialservices/mapping/v1
+schemes:
+  - https
+consumes:
+  - text/xml
+produces:
+  - text/xml
+  - text/plain
+  - application/json
+  - image/tiff
+  - image/png
+tags:
+  - name: HERE Mapping Service
+    description: The HERE mapping service can be used to visualize map tiles as a base map layer in a GIS system or a custom Web application. Using the [HERE](http://here.com) mapping service for active routing and track and trace scenarios is not allowed.
+  - name: Esri Mapping Service
+    description: The Esri mapping service can be used to visualize vector map tiles with predefined styles as a base map layer in a GIS system or a custom Web application. Additionally, the service exposes endpoints to fetch single vector tiles, glyphs, and sprites. Some endpoints are categorized Technical Endpoints that are typically consumed by a rendering library to enable client to depict vector maps.

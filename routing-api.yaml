@@ -1,0 +1,579 @@
+openapi: '3.0.0'
+info:
+  title: Routing
+  description: The Routing API provides a REST endpoint to get detailed vehicle routing information.
+  version: 'v1'
+servers:
+  - url: https://sandbox.api.sap.com/spatialservices/routing/v1
+    description: sandbox server
+  - url: 'https://{serviceprefix}.cfapps.{region}.hana.ondemand.com/routing/v1'
+    description: Production URL
+    variables:
+      serviceprefix:
+        default: spatialservices
+      region:
+        default: eu10
+        enum: [eu10, us10]
+x-sap-shortText: Get up-to-date relevant information for car and truck routing.
+security:
+  - Oauth2_ClientCredentials: []
+externalDocs:
+  description: Click here for more information about SAP HANA spatial services
+  url: 'https://help.sap.com/viewer/p/SAP_HANA_SPATIAL_SERVICES'
+tags:
+  - name: Matrix
+    description: Get routing information for multiple sources and destinations.
+paths:
+  /matrix:
+    post:
+      summary: Get information about distance and duration of routes between source and destination coordinates.
+      tags:
+        - Matrix
+      description: 'Returns distances and travel durations that have been calculated for all possible combinations of any single source with any single destination geo location.'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MatrixRouteRequest'
+        description: 'JSON object containing credentials, lists of source and destination geo locations as well as optional parameters.'
+        required: true
+      responses:
+        '200':
+          description: "Return the computed routing matrix."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteMatrix'
+        '400':
+          description: 'Bad request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Unauthorized
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorSchema'
+        '403':
+          description: Access forbidden
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Forbidden
+        '500':
+          description: 'Internal Server Error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorSchema'
+  /route:
+    post:
+      summary: Calculate (and return) a route between two or more waypoints
+      description: 'Get detailed information (such as distance, duration and shape) about a calculated route between a source, a target and optional waypoint locations.'
+      tags:
+        - Route
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+        description: JSON object containing credentials, waypoints to use for route planning, as well as other optional parameters. The first and last waypoint are interpreted as start and destination of the route, respectively.
+        required: true
+      responses:
+        '200':
+          description: The computed route in form of a GeoJSON feature.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteFeature'
+        '400':
+          description: 'Bad request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Unauthorized
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorSchema'
+        '403':
+          description: Access forbidden
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Forbidden
+        '500':
+          description: 'Internal Server Error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorSchema'
+  /health:
+    get:
+      description: The health endpoint can be used to determine the service's current status.
+      summary: health endpoint
+      tags:
+        - Service Health
+      responses:
+        '200':
+          description: The status of the service could sucessfully be provided. Please note that this status code does not yet tell you what the actual status of the service's health is; this information can be found in the response body.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    description: The service's overall health status. The value is "UP", if the service is healthy, and "CRITICAL" otherwise.
+                    type: string
+                    enum: [UP, CRITICAL]
+                  timestamp:
+                    description: The timestamp (Unix time) when the service reported the healthy status.
+                    type: integer
+                    example: 1606308415
+                  message:
+                    description: Message to explain what the reported status means.
+                    type: string
+                    example: 'All services are healthy'
+                  details:
+                    description: An object that contains further details about the checks that lead to the service's reported overall status.
+                    properties:
+                      HERE:
+                        description: Contains the results of health checks for the respective HERE service
+                        type: array
+                        items:
+                          properties:
+                            service:
+                              description: The HERE service whose status was checked (see https://status.here.com/status)
+                              type: string
+                              enum: [routing]
+                            status:
+                              description: The status of the checked HERE service. The value is "OK", if the third party service is reported as healthy, and "CRITICAL" otherwise.
+                              type: string
+                              enum: [OK, CRITICAL]
+                            message:
+                              description: Message to explain what the reported status means.
+                              example: 'Service is healthy'
+                      ESRI:
+                        description: Contains the results of health checks for the respective Esri service.
+                        type: array
+                        items:
+                          properties:
+                            service:
+                              description: The Esri service whose status was checked.
+                              type: string
+                              enum: [routing]
+                            status:
+                              description: The status of the checked Esri service. The value is "OK", if the third party service is reported as healthy, and "CRITICAL" otherwise.
+                              type: string
+                              enum: [OK, CRITICAL]
+                            message:
+                              description: Message to explain what the reported status means.
+                              example: 'Service is healthy'
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Unauthorized
+        '403':
+          description: Access forbidden
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Forbidden
+        '404':
+          description: Resource not found.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: '404 Not Found: Requested route does not exist.'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorSchema'
+              example:
+                {
+                  "error": {
+                    "code": "00000",
+                    "message": "Cannot GET invalid route"
+                  }
+                }
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorSchema'
+              example:
+                {
+                    "error": {
+                        "code": "00000",
+                        "message": "An internal server error occurred."
+                    }
+                }
+components:
+  securitySchemes:
+    Oauth2_ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: 'https://{authprefix}.authentication.{region}.hana.ondemand.com/oauth/token'
+          scopes: {}
+  schemas:
+    GeoJSON2DPosition:
+      description: 'A 2-dimensional position as defined in https://tools.ietf.org/html/rfc7946#section-3.1.1'
+      type: array
+      items:
+        type: number
+      minItems: 2
+      maxItems: 2
+    GeoJSONLineString:
+      description: 'https://tools.ietf.org/html/rfc7946#section-3.1.4'
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [LineString]
+        coordinates:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeoJSON2DPosition'
+          minItems: 2
+    MatrixRouteRequest:
+      type: object
+      properties:
+        credentials:
+          description: 'Credentials as required by a specific provider.'
+          oneOf:
+            - $ref: '#/components/schemas/ApiKey'
+            - $ref: '#/components/schemas/AppIdCode'
+          example:
+            provider: 'Here'
+            api_key: 'SAP-KEY'
+        sources:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: ["MultiPoint"]
+            coordinates:
+              type: array
+              minItems: 1
+              maxItems: 100
+              items:
+                $ref: '#/components/schemas/GeoJSON2DPosition'
+              example: [[13.4, 52.5],[13.4, 52.5]]
+          required:
+            - type
+            - coordinates
+        destinations:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: ["MultiPoint"]
+            coordinates:
+              type: array
+              minItems: 1
+              maxItems: 100
+              items:
+                $ref: '#/components/schemas/GeoJSON2DPosition'
+              example: [[13.43, 52.5],[13.46, 52.5]]
+          required:
+            - type
+            - coordinates
+        routeType:
+          type: string
+          enum: [fastest, shortest, balanced]
+          default: fastest
+          description: 'Indicates which type of route is calculated. The value "balanced" is not supported by Esri. Also note that the parameter combination "vehicleType = truck" and "routeType = shortest" is not supported by HERE.'
+        departureTime:
+          type: string
+          format: date-time
+          default: now()
+          description: 'The starting time (UTC) for the route calculation. Could be now or any future timestamp.'
+          example: '2019-10-25T15:01:00Z'
+        traffic:
+          type: boolean
+          default: true
+          description: 'Indicates whether real time traffic should be used for route calculation.'
+        vehicleType:
+          type: string
+          enum: [car, truck, bicycle, pedestrian]
+          default: truck
+          description: 'Specify the vehicle type the route matrix should be calculated for. Note that the parameter combination "vehicleType = truck" and "routeType = shortest" is not supported by HERE'
+        vehicleWidth:
+          type: number
+          description: 'Specify vehicle width, in meters. Must be larger than 0. Provider-specific upper limits might apply. Depending on the chosen provider, this parameter might be ignored in combination with certain vehicle types. For example, HERE only supports this parameter with truck routing.'
+        vehicleLength:
+          type: number
+          description: 'Specify vehicle length, in meters. Must be larger than 0. Provider-specific upper limits might apply. Depending on the chosen provider, this parameter might be ignored in combination with certain vehicle types. For example, HERE only supports this parameter with truck routing.'
+        vehicleHeight:
+          type: number
+          description: 'Specify vehicle height, in meters. Must be larger than 0.  Provider-specific upper limits might apply. Depending on the chosen provider, this parameter might be ignored in combination with certain vehicle types. For example, HERE only supports this parameter with truck routing.'
+        vehicleWeight:
+          type: number
+          description: 'Specify vehicle weight including trailers and shipped goods, in kg. Must be larger than 0.  Provider-specific upper limits might apply. Depending on the chosen provider, this parameter might be ignored in combination with certain vehicle types. For example, HERE only supports this parameter with truck routing.'
+        various:
+          type: object
+          description: 'This optional object can contain key-value pairs of provider-specific additional parameters not provided by default or being vendor specific. May overwrite any already provided or default parameter, but not change the general JSON structure of the response.'
+      required:
+        - credentials
+        - sources
+        - destinations
+    RouteMatrix:
+      type: array
+      description: .
+      items:
+        oneOf:
+          - type: object
+            properties:
+              startIndex:
+                type: integer
+                description: 'Index of the coordinate pair in the request`s "sources" multipoint geometry that is used as starting point of the calculation'
+              destinationIndex:
+                type: integer
+                description: 'Index of the coordinate pair in the request`s "destinations" multipoint geometry that is used as end point of the calculation'
+              summary:
+                type: object
+                properties:
+                  distance:
+                    description: 'The total travel distance for the route in meters.'
+                    type: integer
+                  travelTime:
+                    description: 'The total travel time in seconds.'
+                    type: integer
+          - type: object
+            properties:
+              startIndex:
+                type: integer
+                example: 1
+                description: 'Index of the coordinate pair in the request`s "sources" multipoint geometry that is used as starting point of the calculation'
+              destinationIndex:
+                type: integer
+                example: 0
+                description: 'Index of the coordinate pair in the request`s "destinations" multipoint geometry that is used as end point of the calculation'
+              status:
+                type: string
+                description: 'Status text indicating that no route could be calculated for a defined combination of start and end point. This field is not present if the route calculation succeeded.'
+                enum: ['failed', 'rangeExceeded']
+      example:
+        - startIndex: 0
+          destinationIndex: 0
+          summary:
+            distance: 372
+            travelTime: 26
+        - startIndex: 0
+          destinationIndex: 1
+          status: 'failed'
+        - startIndex: 1
+          destinationIndex: 0
+          summary:
+            distance: 434
+            travelTime: 30
+        - startIndex: 1
+          destinationIndex: 1
+          status: 'failed'
+    RouteRequest:
+      type: object
+      description: 'A JSON object describing a request for a route.'
+      properties:
+        credentials:
+          description: 'Credentials as required by a specific provider.'
+          oneOf:
+            - $ref: '#/components/schemas/ApiKey'
+            - $ref: '#/components/schemas/AppIdCode'
+          example:
+            provider: 'Here'
+            api_key: 'SAP-KEY'
+        waypoints:
+          type: object
+          description: Specify the start, the destination as well as any additional location of the route. At least a source (first entry in the list of 'coordinates') and a destination (last entry in the list of 'coordinates') must be provided. In case no route could be calculated for a given number of waypoints, an error will be returned with status code 400.
+          properties:
+            type:
+              type: string
+              enum: ["MultiPoint"]
+            coordinates:
+              type: array
+              minItems: 2
+              items:
+                $ref: '#/components/schemas/GeoJSON2DPosition'
+              example: [[13.43, 52.5],[13.76, 53.5]]
+        routeType:
+          type: string
+          enum: [fastest, shortest, balanced]
+          default: fastest
+          description: 'Indicates which type of route is calculated. The value "balanced" is not supported by Esri. Also note that the parameter combination "vehicleType = truck" and "routeType = shortest" is not supported by HERE.'
+        departureTime:
+          type: string
+          format: date-time
+          default: now()
+          description: 'The starting time (UTC) for the route calculation. Could be now or any future timestamp.'
+          example: '2019-10-25T15:01:00Z'
+        traffic:
+          type: boolean
+          default: true
+          description: 'Indicates whether real time traffic should be used for route calculation.'
+        vehicleType:
+          type: string
+          enum: [car, truck, bicycle, pedestrian]
+          default: truck
+          description: 'Specify the vehicle type the route should be calculated for. Note that the parameter combination "vehicleType = truck" and "routeType = shortest" is not supported by HERE.'
+        vehicleWidth:
+          type: number
+          description: 'Specify vehicle width, in meters. Must be larger than 0. Provider-specific upper limits might apply. Depending on the chosen provider, this parameter might be ignored in combination with certain vehicle types. For example, HERE only supports this parameter with truck routing.'
+        vehicleLength:
+          type: number
+          description: 'Specify vehicle length, in meters. Must be larger than 0. Provider-specific upper limits might apply. Depending on the chosen provider, this parameter might be ignored in combination with certain vehicle types. For example, HERE only supports this parameter with truck routing.'
+        vehicleHeight:
+          type: number
+          description: 'Specify vehicle height, in meters. Must be larger than 0.  Provider-specific upper limits might apply. Depending on the chosen provider, this parameter might be ignored in combination with certain vehicle types. For example, HERE only supports this parameter with truck routing.'
+        vehicleWeight:
+          type: number
+          description: 'Specify vehicle weight including trailers and shipped goods, in kg. Must be larger than 0.  Provider-specific upper limits might apply. Depending on the chosen provider, this parameter might be ignored in combination with certain vehicle types. For example, HERE only supports this parameter with truck routing.'
+        vehicleSpeedProfile:
+          type: string
+          example: '72;58;30'
+          description: "This optional parameter allows to specify a custom speed profile representing the vehicle's average speed in [km/h] along roads of different classes. These classes are ranked fastest to slowest by the possible travel speed they support, and represent: 'high-speed controlled-access travel;inter-city travel;intra-city travel'. Depending on the provider's support of customized speed profiles, these values will be mapped accordingly in a best-fit manner. Any single one of these values (or combination thereof) can be omitted in favour of the provider's default values. For example, the string '72;;30' does not specify a value for the class 'inter-city travel', and will therefore result in usage of the provider's default values for that class. If this parameter is part of the request, the minimal requirement for it's value is a string consisting of two semi-colons, i.e. ';;'. This is equivalent to not providing the parameter in the request, at all, as it will result in the usage of the provider's default speed profiles for all classes. The provider's default speed profiles usually are based on other physical vehicle properties such as length, height, width, and - more prominently amongst them - vehicle weight. In case specifying a custom speed profile does not give expected or accurate routing results, one approach could be to specify physical vehicle properties such as 'vehicleWeight' only, in order to allow for the provider's algorithms to choose the speed profile suited best for a vehicle with such properties. If a custom speed profile is provided, though, the respective default values will be overwritten. Please also note that the usage of the parameter 'various' is not supported if the parameter 'vehicleSpeedProfile' is provided. Esri does not support this parameter."
+        returnGeometry:
+          type: boolean
+          default: true
+          description: 'Specify whether to return calculated route as geometry. If set to false will return an empty linestring geometry.'
+        various:
+          type: object
+          description: 'This optional object can contain key-value pairs of provider-specific additional parameters not provided by default or being vendor specific. May overwrite any already provided or default parameter, but not change the general JSON structure of the response.'
+      required:
+        - credentials
+        - waypoints
+    RouteFeature:
+      type: object
+      description: 'Describes a route by specifying distance and duration for the entire routes as well as its legs (in case waypoints in between have been provided). By default, will also contain a linestring in geojson format representing the course of the route.'
+      properties:
+        type:
+          type: string
+          enum: [Feature]
+        geometry:
+          $ref: '#/components/schemas/GeoJSONLineString'
+        properties:
+          type: object
+          properties:
+            distance:
+              type: number
+              description: Total route distance in meters
+              minimum: 0
+            duration:
+              type: integer
+              description: Total duration in seconds
+              minimum: 0
+            legs:
+              type: array
+              description: Details about the sections of the route between waypoints
+              items:
+                type: object
+                required:
+                  - startPosition
+                  - endPosition
+                  - length
+                  - duration
+                properties:
+                  startPosition:
+                    type: object
+                    properties:
+                      latitude:
+                        type: number
+                      longitude:
+                        type: number
+                  endPosition:
+                    type: object
+                    properties:
+                      latitude:
+                        type: number
+                      longitude:
+                        type: number
+                  length:
+                    type: integer
+                  duration:
+                    type: integer
+      required:
+        - type
+        - geometry
+        - properties
+    ApiKey:
+      type: object
+      properties:
+        provider:
+          description: 'The provider from which to get the routing information. Currently, the following providers are supported: Here, Esri.'
+          type: string
+          enum: [Here, Esri]
+        api_key:
+          description: >
+            The ApiKey to be used for the provider. If its value is 'SAP-KEY', SAP will use established contract agreements with the respective provider. This currently is only supported for the provider Here, when using Esri you need to bring your own api_key. 
+          example: "<customer-specific-api_key> or SAP-KEY"
+          type: string
+          minLength: 1
+      required:
+        - provider
+        - api_key
+    AppIdCode:
+      type: object
+      properties:
+        provider:
+          description: 'The provider from which to get the routing information. Currently, the following providers are supported: Here, Esri.'
+          type: string
+          enum: [Here]
+        app_id:
+          description: >
+            The AppID to be used for the provider. If both, this and `app_code` are set to 'SAP-KEY', SAP will use established contract agreements with the respective provider. For Esri, this authentication method is not supported, please use api_key instead.
+          example: "<customer-specific-app_id> or SAP-KEY"
+          type: string
+          minLength: 1
+        app_code:
+          description: >
+            The AppCode to be used for the provider. If both, this and `app_id` are set to 'SAP-KEY', SAP will use established contract agreements with the respective provider. For Esri, this authentication method is not supported, please use api_key instead.
+          example: "<customer-specific-app_code> or SAP-KEY"
+          type: string
+          minLength: 1
+      required:
+        - provider
+        - app_id
+        - app_code
+    DefaultErrorSchema:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              description: Technical code of the error situation
+              type: string
+              example: "00000"
+            message:
+              description: Description of the error
+              type: string
+              example: "The request body was not valid."
+          example:
+            {
+              "code": "00000",
+              "message": "The request body was not valid."
+            }

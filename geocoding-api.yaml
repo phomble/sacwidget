@@ -1,0 +1,448 @@
+openapi: '3.0.0'
+info:
+  title: Geocoding
+  description: The Geocoding API provides a REST endpoint to transform addresses into geographic coordinates.
+  version: 'v1'
+servers:
+  - url: https://sandbox.api.sap.com/spatialservices/geocoding/v1
+    description: sandbox server
+  - url: 'https://{serviceprefix}.cfapps.{region}.hana.ondemand.com/geocoding/v1'
+    description: Production URL
+    variables:
+      serviceprefix:
+        default: spatialservices
+      region:
+        default: eu10
+        enum: [eu10, us10]
+x-sap-shortText: Transform multiple addresses into geo positions.
+security:
+  - Oauth2_ClientCredentials: []
+externalDocs:
+  description: Click here for more information about SAP HANA spatial services
+  url: 'https://help.sap.com/viewer/p/SAP_HANA_SPATIAL_SERVICES'
+tags:
+  - name: Geocode
+    description: Transform multiple addresses into closest-matching geo positions.
+paths:
+  /geocode:
+    post:
+      summary: Transform multiple addresses into closest-matching geo positions.
+      tags:
+        - Geocode
+      description: 'Returns a list of geo positions including their address label for a list of addresses provided as free-style search strings'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/EsriGeoCodeRequest'
+                - $ref: '#/components/schemas/HereGeoCodeRequest'
+              example:
+                credentials:
+                  provider: 'Here'
+                  api_key: 'SAP-KEY'
+                addresses: ['Bismarckplatz, Heidelberg, Deutschland']
+        description: 'JSON object containing credentials as well as a list of strings with addresses or free-style location descriptions'
+        required: true
+      responses:
+        '200':
+          description: For every provided address the best-fitting position including its relevance as well as address information is returned in the form of a GeoJSON Feature, even if the provided address was ambiguous (e.g. Leipziger Str., Frankfurt). If a provided address could not be successfully geocoded, an empty GeoJSON feature will be returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: See also https://tools.ietf.org/html/rfc7946#section-3.3
+                properties:
+                  type:
+                    type: string
+                    enum: [FeatureCollection]
+                  features:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GeoCodeFeature'
+        '400':
+          description: 'Bad request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Unauthorized
+        '403':
+          description: Access forbidden
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Forbidden
+        '500':
+          description: 'Internal Server Error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorSchema'
+  /health:
+    get:
+      description: The health endpoint can be used to determine the service's current status.
+      summary: health endpoint
+      tags:
+        - Service Health
+      responses:
+        '200':
+          description: The status of the service could sucessfully be provided. Please note that this status code does not yet tell you what the actual status of the service's health is; this information can be found in the response body.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    description: The service's overall health status. The value is "UP", if the service is healthy, and "CRITICAL" otherwise.
+                    type: string
+                    enum: [UP, CRITICAL]
+                  timestamp:
+                    description: The timestamp (Unix time) when the service reported the healthy status.
+                    type: integer
+                    example: 1606308415
+                  message:
+                    description: Message to explain what the reported status means.
+                    type: string
+                    example: 'All services are healthy'
+                  details:
+                    description: An object that contains further details about the checks that lead to the service's reported overall status.
+                    properties:
+                      ESRI:
+                        description: Contains the results of health checks for the respective ESRI service.
+                        type: array
+                        items:
+                          properties:
+                            service:
+                              description: The ESRI service whose status was checked.
+                              type: string
+                              enum: [geocoding]
+                            status:
+                              description: The status of the checked ESRI service. The value is "OK", if the third party service is reported as healthy, and "CRITICAL" otherwise.
+                              type: string
+                              enum: [OK, CRITICAL]
+                            message:
+                              description: Message to explain what the reported status means.
+                              example: 'Service is healthy'
+                      HERE:
+                        description: Contains the results of health checks for the respective HERE service.
+                        type: array
+                        items:
+                          properties:
+                            service:
+                              description: The HERE service whose status was checked (see https://status.here.com/status).
+                              type: string
+                              enum: [geocoding]
+                            status:
+                              description: The status of the checked HERE service. The value is "OK", if the third party service is reported as healthy, and "CRITICAL" otherwise.
+                              type: string
+                              enum: [OK, CRITICAL]
+                            message:
+                              description: Message to explain what the reported status means.
+                              example: 'Service is healthy'
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Unauthorized
+        '403':
+          description: Access forbidden
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Forbidden
+        '404':
+          description: Resource not found.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: '404 Not Found: Requested route does not exist.'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorSchema'
+              example:
+                {
+                  "error": {
+                    "code": "00000",
+                    "message": "Cannot GET invalid route"
+                  }
+                }
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorSchema'
+              example:
+                {
+                  "error": {
+                      "code": "00000",
+                      "message": "An internal server error occurred."
+                  }
+                }
+components:
+  securitySchemes:
+    Oauth2_ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: 'https://{authprefix}.authentication.{region}.hana.ondemand.com/oauth/token'
+          scopes: {}
+  schemas:
+    GeoJSON2DPosition:
+      description: 'A 2-dimensional position as defined in https://tools.ietf.org/html/rfc7946#section-3.1.1'
+      example: [8.64297866821289, 49.30324399883413]
+      type: array
+      items:
+        type: number
+      minItems: 2
+      maxItems: 2
+    GeoJSON2DPoint:
+      description: 'https://tools.ietf.org/html/rfc7946#section-3.1.2'
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [Point]
+        coordinates:
+          $ref: '#/components/schemas/GeoJSON2DPosition'
+      required:
+        - type
+        - coordinates
+    EsriGeoCodeRequest:
+      type: object
+      properties:
+        credentials:
+          description: 'Credentials as required by the provider.'
+          $ref: '#/components/schemas/EsriApiKey'
+          example:
+            provider: 'Esri'
+            api_key: '<customer-specific-api_key>'
+        addresses:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 200
+            description: 'Address in free-style text format'
+            example: 'Bismarckplatz, Heidelberg, Deutschland'
+          maxItems: 1000
+      required:
+        - credentials
+        - addresses
+    HereGeoCodeRequest:
+      type: object
+      properties:
+        credentials:
+          description: 'Credentials as required by the provider.'
+          oneOf:
+            - $ref: '#/components/schemas/HereAppIdCode'
+            - $ref: '#/components/schemas/HereApiKey'
+          example:
+            provider: 'Here'
+            api_key: 'SAP-KEY'
+        addresses:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            description: 'Address in free-style text format'
+            example: 'Bismarckplatz, Heidelberg, Deutschland'
+      required:
+        - credentials
+        - addresses
+    GeoCodeFeature:
+      type: object
+      description: 'The GeoCodeFeature contains one geo position and matching label as provided by the respective provider.'
+      properties:
+        type:
+          type: string
+          enum: [Feature]
+        geometry:
+          $ref: '#/components/schemas/GeoJSON2DPoint'
+        properties:
+          type: object
+          required:
+            - locationLabel
+            - relevance
+            - address
+            - inputIndex
+            - precision
+          properties:
+            locationLabel:
+              type: string
+            relevance:
+              description: 'Indicates the relevance of the results found; the higher the score the more relevant the alternative. The score is a normalized value between 0 and 1.'
+              type: number
+              example: 1
+            address:
+              $ref: '#/components/schemas/Address'
+            inputIndex:
+              type: number
+              description: "Index of the input address from the request's list of addresses. This allows to attribute geocoded results to their input data."
+              example: 0
+            precision:
+              $ref: "#/components/schemas/PrecisionInformation"
+      required:
+        - type
+        - geometry
+        - properties
+    Address:
+      type: object
+      description: 'A location represented by an address. The combination of fields that are actually filled may vary and depends on the requested provider.'
+      properties:
+        label:
+          description: 'Assembled address value built out of the parsed address components. In some cases this might be the only filled field.'
+          type: string
+          example: 'Bismarckplatz, 69115 Heidelberg, Deutschland'
+        city:
+          type: string
+          description: 'Input token(s) the parser has categorized as the city part of an address.'
+          example: 'Heidelberg'
+        country:
+          type: string
+          description: 'ISO 3166-alpha-3 country code'
+          example: 'DEU'
+        county:
+          type: string
+          description: 'Input token(s) the parser has categorized as the county part of an address.'
+          example: 'Heidelberg'
+        district:
+          type: string
+          description: 'Input token(s) the parser has categorized as the district part of an address.'
+          example: 'Bergheim'
+        houseNumber:
+          type: string
+          description: 'Input token(s) the parser has categorized as the house number part of an address.'
+        postalCode:
+          type: string
+          description: 'Input token(s) the parser has categorized as the postal code part of an address.'
+          example: '69115'
+        state:
+          type: 'string'
+          example: 'Baden-Württemberg'
+          description: 'Input token(s) the parser has categorized as the state part of an address.'
+        street:
+          type: string
+          description: 'Input token(s) the parser has categorized as the street part of an address (including intersections which are defined by two streets).'
+          example: 'Bismarckplatz'
+        additionalData:
+          type: array
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+              key:
+                type: string
+    PrecisionInformation:
+      type: object
+      description: Provides information about the quality and precision of the geocoding result.
+      properties:
+        addressType:
+          type: string
+          description: The type of address, based on the highest precision the address could be resolved with. If the value is 'other', no information about the type is available. Please note that not all providers support each type of address.
+          enum:
+            - country
+            - state
+            - county
+            - postalCode
+            - city
+            - district
+            - intersection
+            - street
+            - houseNumberInterpolated
+            - houseNumberExact
+            - houseNumberWithSupplement
+            - other
+          example: street
+    EsriApiKey:
+      type: object
+      properties:
+        provider:
+          description: The provider from which to get the geocoding information.
+          type: string
+          enum: [Esri]
+        api_key:
+          description: >
+            The ApiKey to be used for the provider. The value "SAP-KEY" is not supported.
+          example: '<customer-specific-api_key>'
+          type: string
+          minLength: 1
+      required:
+        - provider
+        - api_key
+    HereApiKey:
+      type: object
+      properties:
+        provider:
+          description: The provider from which to get the geocoding information.
+          type: string
+          enum: [Here]
+        api_key:
+          description: >
+            The ApiKey to be used for the provider. If its value is "SAP-KEY", SAP will use established contract agreements with the respective provider.
+          example: '<customer-specific-api_key> or SAP-KEY'
+          type: string
+          minLength: 1
+      required:
+        - provider
+        - api_key
+    HereAppIdCode:
+      type: object
+      properties:
+        provider:
+          description: The provider from which to get the geocoding information.
+          type: string
+          enum: [Here]
+        app_id:
+          description: >
+            The AppID to be used for the provider. If both, this and "app_code" are set to "SAP-KEY", SAP will use established contract agreements with the respective provider.
+          example: '<customer-specific-app_id> or SAP-KEY'
+          type: string
+          minLength: 1
+        app_code:
+          description: >
+            The AppCode to be used for the provider. If both, this and "app_id" are set to "SAP-KEY", SAP will use established contract agreements with the respective provider.
+          example: '<customer-specific-app_code> or SAP-KEY'
+          type: string
+          minLength: 1
+      required:
+        - provider
+        - app_id
+        - app_code
+    DefaultErrorSchema:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              description: Technical code of the error situation
+              type: string
+              example: '00000'
+            message:
+              description: Description of the error
+              type: string
+              example: 'The request body was not valid.'
+          example:
+            {
+              "code": "00000",
+              "message": "The request body was not valid."
+            }

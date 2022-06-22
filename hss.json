@@ -1,0 +1,259 @@
+{
+	"info": {
+		"_postman_id": "af194474-2e10-4bb0-864f-3212a734d39b",
+		"name": "Esri Test (Routing, Geocoding and Mapping)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "routing-esri/v1/route",
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "YOUR_ACCESS_TOKEN_HERE",
+							"type": "string"
+						},
+						{
+							"key": "tokenType",
+							"value": "bearer",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"credentials\": {\n    \"provider\": \"Esri\",\n    \"api_key\": \"YOUR_ESRI_API_KEY\"\n  },\n  \"waypoints\": {\n    \"type\": \"MultiPoint\",\n    \"coordinates\": [\n      [\n        8.6433734,\n        49.2939276\n      ],\n      [\n        8.626827,\n        49.267504\n      ]\n    ]\n  }\n}"
+				},
+				"url": {
+					"raw": "https://spatialservices.cfapps.sap.hana.ondemand.com/routing-esri/v1/route",
+					"protocol": "https",
+					"host": [
+						"spatialservices",
+						"cfapps",
+						"sap",
+						"hana",
+						"ondemand",
+						"com"
+					],
+					"path": [
+						"routing-esri",
+						"v1",
+						"route"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "geocoding-esri/v1/geocode",
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessTokenUrl",
+							"value": "{{oauthEndpoint}}",
+							"type": "string"
+						},
+						{
+							"key": "clientSecret",
+							"value": "{{clientsecret}}",
+							"type": "string"
+						},
+						{
+							"key": "clientId",
+							"value": "{{clientid}}",
+							"type": "string"
+						},
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "string"
+						},
+						{
+							"key": "accessToken",
+							"value": "",
+							"type": "string"
+						},
+						{
+							"key": "tokenType",
+							"value": "bearer",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"credentials\": {\n    \"provider\": \"Esri\",\n    \"api_key\": \"YOUR_ESRI_API_KEY\"\n  },\n  \"addresses\": [\n    \"Dietmar-Hopp-Allee, Walldorf, Deutschland\",\n    \"Bismarckplatz, Heidelberg, Deutschland\"\n  ]\n}"
+				},
+				"url": {
+					"raw": "https://spatialservices.cfapps.sap.hana.ondemand.com/geocoding-esri/v1/geocode",
+					"protocol": "https",
+					"host": [
+						"spatialservices",
+						"cfapps",
+						"sap",
+						"hana",
+						"ondemand",
+						"com"
+					],
+					"path": [
+						"geocoding-esri",
+						"v1",
+						"geocode"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "mapping-esri/v1/styles",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"});",
+							"",
+							"contentType = postman.getResponseHeader(\"content-Type\")",
+							"pm.expect(contentType).to.equal(\"image/png\")",
+							"",
+							"postman.setNextRequest(\"test_wms_xhost\");",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessTokenUrl",
+							"value": "{{oauthEndpoint}}",
+							"type": "string"
+						},
+						{
+							"key": "clientSecret",
+							"value": "{{clientsecret}}",
+							"type": "string"
+						},
+						{
+							"key": "clientId",
+							"value": "{{clientid}}",
+							"type": "string"
+						},
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "string"
+						},
+						{
+							"key": "tokenType",
+							"value": "bearer",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Host",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "{{endpoint}}"
+					},
+					{
+						"key": "X-Auth-Token",
+						"type": "text",
+						"value": "{{xAuthToken}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "{{endpoint}}"
+					}
+				],
+				"url": {
+					"raw": "https://spatialservices.cfapps.sap.hana.ondemand.com/mapping-esri/v1/esri/styles/vector/arcgis.dark.gray?api_key=YOUR_ESRI_API_KEY",
+					"protocol": "https",
+					"host": [
+						"spatialservices",
+						"cfapps",
+						"sap",
+						"hana",
+						"ondemand",
+						"com"
+					],
+					"path": [
+						"mapping-esri",
+						"v1",
+						"esri",
+						"styles",
+						"vector",
+						"arcgis.dark.gray"
+					],
+					"query": [
+						{
+							"key": "count",
+							"value": "5",
+							"disabled": true
+						},
+						{
+							"key": "api_key",
+							"value": "YOUR_ESRI_API_KEY"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
