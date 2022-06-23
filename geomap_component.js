@@ -119,7 +119,7 @@
                 esriConfig.apiKey = gPassedAPIkey
                 
                  //  set hstoken 
-                esriConfig.apiKey = gPassedHSToken
+                esriConfig.hstoken = gPassedHSToken
         
                 // set routing service
                 var routeTask = new RouteTask({
