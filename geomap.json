@@ -88,21 +88,17 @@
         {
           "name": "hst",
           "type": "string",
-          "description": "Set New API Key"
+          "description": "Set New HS TOken"
         }
       ],
       "body": "this.hstoken = hst;"
     },
-     "setHSToken": {
-      "description": "Set the HS Token",
+      "getHSToken": {   
+      "returnType": "string",
+      "description": "hs token",
       "parameters": [
-        {
-          "name": "hst",
-          "type": "string",
-          "description": "Set New HS Token"
-        }
       ],
-      "body": "this.hstoken = hst;"
+      "body": "return this.hstoken;"
     },
     "getPortalURL": {
       "returnType": "string",
