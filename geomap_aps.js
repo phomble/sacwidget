@@ -98,8 +98,14 @@
             this.setValue("apikey", value);
             
         }
-        
-       
+        get hstoken() {
+            return this.getValue("hstoken");
+            
+        }
+        set hstoken(value) {
+            this.setValue("hstoken", value);
+            
+        }       
 
         get portalurl() {
             return this.getValue("portalurl");
