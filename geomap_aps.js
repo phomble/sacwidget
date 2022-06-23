@@ -1,6 +1,7 @@
 (function () {
     var gPassedAPIkey;
     var gPassedHSToken;
+    var gPassedPortalURL; //ESRI Portal URL
     let tmpl = document.createElement("template");
     tmpl.innerHTML = `
       <style>
