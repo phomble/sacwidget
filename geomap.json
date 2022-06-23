@@ -93,6 +93,17 @@
       ],
       "body": "this.hstoken = hst;"
     },
+     "setHSToken": {
+      "description": "Set the HS Token",
+      "parameters": [
+        {
+          "name": "hst",
+          "type": "string",
+          "description": "Set New HS Token"
+        }
+      ],
+      "body": "this.hstoken = hst;"
+    },
     "getPortalURL": {
       "returnType": "string",
       "description": "Get portal URL",
