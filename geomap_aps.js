@@ -35,8 +35,8 @@
               <td><input id="apikey" name="apikey" type="text"></td>
             </tr>
            <tr>
-              <td><label for="apikey">API Key:</label></td>
-              <td><input id="apikey" name="apikey" type="text"></td>
+              <td><label for="hstoken">HS Token:</label></td>
+              <td><input id="hstoken" name="hstoken" type="text"></td>
             </tr>
             <tr>
               <td><label for="portalurl">URL:</label></td>
