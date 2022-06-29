@@ -35,9 +35,9 @@
         console.log( "Layer is");
         console.log( svcLyr);
 //
-       // var map = this.map;
+       var map = this.map;
         
-        array.forEach(gMyWebmap.itemInfo.itemData.operationalLayers, function(layer){
+        array.forEach(map.itemInfo.itemData.operationalLayers, function(layer){
             if(layer.title == 'Parcels'){
             layerID = layer.id;
              console.log( [layerID);  
