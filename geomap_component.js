@@ -40,7 +40,7 @@
         array.forEach(gMyWebmap.itemInfo.itemData.operationalLayers, function(layer){
             if(layer.title == 'Parcels'){
             layerID = layer.id;
-             console.log( [layer",layerID]);  
+             console.log( [layerID);  
     }
 })        
         
