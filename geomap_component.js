@@ -31,7 +31,7 @@
     //
     // A definition query filters what was first retrieved from the SPL feature service
     function applyDefinitionQuery() {
-        var svcLyr = gMyWebmap.findLayerById( 'NapervilleElectric_SAC' ); 
+        var svcLyr = gMyWebmap.findLayerById( 'NapervilleElectric_MIL1' ); 
         console.log( "Layer is");
         console.log( svcLyr);
 
@@ -128,7 +128,7 @@
         
                 const webmap = new WebMap ({
                     portalItem: {
-                        id: "a17e134c51f74252bca8db3c66ef032e"
+                        id: "7aee6b93589845399d4cd7275e056cd3"
                     }
                 });
 
