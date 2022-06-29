@@ -34,7 +34,22 @@
         var svcLyr = gMyWebmap.findLayerById( 'a01b9b3b15834c52b0fde29b7bfb9e75' ); 
         console.log( "Layer is");
         console.log( svcLyr);
-
+//
+       // var map = this.map;
+        
+        array.forEach(gMyWebmap.itemInfo.itemData.operationalLayers, function(layer){
+            if(layer.title == 'Parcels'){
+            layerID = layer.id;
+             console.log( [layer",layerID]);  
+    }
+})        
+        
+        
+//
+        
+        
+        
+        
         // make layers visible
         svcLyr.visible = true;
 
