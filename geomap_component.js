@@ -31,21 +31,10 @@
     //
     // A definition query filters what was first retrieved from the SPL feature service
     function applyDefinitionQuery() {
-        var svcLyr = gMyWebmap.findLayerById( 'SPL' ); 
+        var svcLyr = gMyWebmap.findLayerById( 'NapervilleElectric_MIL1' ); 
         console.log( "Layer is");
         console.log( svcLyr);
-//
-       var map = this.map;
-        
-        array.forEach(map.itemInfo.itemData.operationalLayers, function(layer){
-            if(layer.title == 'Parcels'){
-            layerID = layer.id;
-             console.log( [layerID);  
-    }
-})        
-        
-        
-//
+
         
         
         
