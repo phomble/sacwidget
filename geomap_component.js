@@ -37,7 +37,7 @@
         console.log( "Layer is");
         console.log( svcLyr);
 
-        const foundLayer = map.allLayers.
+        
         
         
         // make layers visible
