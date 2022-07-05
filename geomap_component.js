@@ -31,12 +31,11 @@
     //
     // A definition query filters what was first retrieved from the SPL feature service
     function applyDefinitionQuery() {
-        var svcLyr = gMyWebmap.findLayerById( 'NapervilleElectric_MIL1_6627' ); 
+        var svcLyr = gMyWebmap.find(function(layer) {return layer.title === "NapervilleElectricNS_WFL1" });        
         console.log( "Layer is");
         console.log( svcLyr);
 
-        
-        
+        const foundLayer = map.allLayers.
         
         
         // make layers visible
