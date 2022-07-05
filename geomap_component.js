@@ -32,7 +32,7 @@
     // A definition query filters what was first retrieved from the SPL feature service
     function applyDefinitionQuery() {
         var svcLyr = gMyWebmap.allLayers.find(function(layer) {
-            return layer.title === "NapervilleElectricNS_WFL1" ;
+            return layer.title === "NapervilleElectric_MIL1" ;
         });        
         console.log( "Layer is");
         console.log( svcLyr);
