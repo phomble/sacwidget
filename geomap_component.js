@@ -36,7 +36,7 @@
         });        
         console.log( "Layer is");
         console.log( svcLyr);
-        console.log( layer.title);
+        console.log( layer);
         
         
         
