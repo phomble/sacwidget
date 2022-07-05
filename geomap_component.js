@@ -34,8 +34,8 @@
         var svcLyr = gMyWebmap.allLayers.find(function(layer) {
             return layer.title === "NapervilleElectric_MIL1" ;
         });        
-        console.log( "Layer is");
-        console.log( svcLyr);
+      //  console.log( "Layer is");
+       // console.log( svcLyr);
         
         
         
@@ -47,9 +47,9 @@
         // so it may be skipped over during execution and be executed after exiting this function
         svcLyr.when(function() {
             gMyLyr = svcLyr.findSublayerById(6);    // store in global variable
-            console.log("Sublayer loaded...");
-            console.log( "Sublayer is");
-            console.log( gMyLyr);
+        //    console.log("Sublayer loaded...");
+        //    console.log( "Sublayer is");
+        //    console.log( gMyLyr);
 
             // force sublayer visible
             gMyLyr.visible = true;
