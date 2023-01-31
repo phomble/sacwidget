@@ -31,15 +31,10 @@
     //
     // A definition query filters what was first retrieved from the SPL feature service
     function applyDefinitionQuery() {
-        var svcLyr = gMyWebmap.allLayers.find(function(layer) {
-            return layer.title === "NapervilleElectric_MIL1" ;
-        });        
-      //  console.log( "Layer is");
-       // console.log( svcLyr);
-        
-        
-        
-        
+        var svcLyr = this.gMyWebmap.findLayerById( 'daed1167baed413a9e38f47ea81b0fab' ); 
+        console.log( "Layer is");
+        console.log( svcLyr);
+
         // make layers visible
         svcLyr.visible = true;
 
@@ -47,9 +42,9 @@
         // so it may be skipped over during execution and be executed after exiting this function
         svcLyr.when(function() {
             gMyLyr = svcLyr.findSublayerById(6);    // store in global variable
-        //    console.log("Sublayer loaded...");
-        //    console.log( "Sublayer is");
-        //    console.log( gMyLyr);
+            console.log("Sublayer loaded...");
+            console.log( "Sublayer is");
+            console.log( gMyLyr);
 
             // force sublayer visible
             gMyLyr.visible = true;
@@ -133,7 +128,7 @@
         
                 const webmap = new WebMap ({
                     portalItem: {
-                        id: "7aee6b93589845399d4cd7275e056cd3"
+                        id: "a17e134c51f74252bca8db3c66ef032e"
                     }
                 });
 
