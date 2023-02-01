@@ -30,11 +30,16 @@
     // to filter service location geometries
     //
     // A definition query filters what was first retrieved from the SPL feature service
-    function applyDefinitionQuery() {
-        var svcLyr = this.gMyWebmap.findLayerById( 'a17e134c51f74252bca8db3c66ef032e' ); 
+      function applyDefinitionQuery() {
+        var svcLyr = gMyWebmap.allLayers.find(function(layer) {
+            return layer.title === "NapervilleElectric_MIL1" ;
+        });        
         console.log( "Layer is");
         console.log( svcLyr);
-
+        
+        
+        
+        
         // make layers visible
         svcLyr.visible = true;
 
