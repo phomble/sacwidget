@@ -44,7 +44,7 @@
     "hstoken": {
       "type": "string",
       "description": "HS Token",
-      "default": ""  
+      "default": "00"  
     },
     "servicelevel": {
       "type": "integer",
