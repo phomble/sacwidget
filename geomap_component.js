@@ -31,11 +31,11 @@
     //
     // A definition query filters what was first retrieved from the SPL feature service
        function applyDefinitionQuery() {
-        var svcLyr = this.gMyWebmap.findLayerById( 'a17e134c51f74252bca8db3c66ef032e' ); 
+        var svcLyr = this.gMyWebmap.findLayerById( '242950b01cac4ca5b421ccd3dfdf28fa' ); 
         console.log( "Layer is");
         console.log( svcLyr);
 
-        // make layers visible
+        // make layers visible a17e134c51f74252bca8db3c66ef032e
         svcLyr.visible = true;
 
         // only execute when the sublayer is loaded. Note this is asynchronous
