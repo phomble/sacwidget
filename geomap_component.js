@@ -31,7 +31,7 @@
     //
     // A definition query filters what was first retrieved from the SPL feature service
        function applyDefinitionQuery() {
-        var svcLyr = this.gMyWebmap.findLayerById( 'a17e134c51f74252bca8db3c66ef032e' ); 
+        var svcLyr = this.gMyWebmap.findLayerById( '9c17951045ed4579ae498102709e80cb' ); 
         console.log( "Layer is");
         console.log( svcLyr);
 
@@ -125,10 +125,10 @@
                 var routeTask = new RouteTask({
                     url: "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World"
                 });
-        
+        //"7aee6b93589845399d4cd7275e056cd3"
                 const webmap = new WebMap ({
                     portalItem: {
-                        id: "7aee6b93589845399d4cd7275e056cd3"
+                        id: "d40b65e524b24df9b24c707b77129a6f"
                     }
                 });
 
